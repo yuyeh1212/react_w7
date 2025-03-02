@@ -4,12 +4,16 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import NavbarController from "./components/NavbarController";
 import Home from "./pages/frontend/Home";
 import Products from "./pages/frontend/Products";
 import ProductDetail from "./pages/frontend/ProductDetail";
 import Cart from "./pages/frontend/Cart";
-import Navbar from "./components/Navbar";
 import LoginForm from "./components/LoginForm";
+import LogoutComponent from "./components/LogoutComponent";
+import Alert from "./components/Alert";
+import ProductManagement from "./pages/backend/ProductManagement";
+import OrderManagement from "./pages/backend/OrderManagement";
 import useCart from "./hooks/useCart";
 import useAuth from "./hooks/useAuth";
 import "./assets/styles.scss";
@@ -38,9 +42,11 @@ function App() {
 
   return (
     <Router>
-      <Navbar />
+      <Alert />
+      <NavbarController isAuth={isAuth} />
       <div className="container">
         <Routes>
+          {/* 前端路由 */}
           <Route path="/" element={<Home />} />
           <Route
             path="/products"
@@ -61,11 +67,13 @@ function App() {
               />
             }
           />
+
+          {/* 登入/登出 */}
           <Route
             path="/login"
             element={
               isAuth ? (
-                <Navigate to="/" />
+                <Navigate to="/admin" />
               ) : (
                 <LoginForm
                   account={account}
@@ -76,8 +84,26 @@ function App() {
             }
           />
           <Route
+            path="/logout"
+            element={<LogoutComponent onLogout={handleLogout} />}
+          />
+
+          {/* 後台路由 */}
+          <Route
             path="/admin"
             element={isAuth ? <div>管理員頁面</div> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/products"
+            element={
+              isAuth ? <ProductManagement /> : <Navigate to="/login" replace />
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              isAuth ? <OrderManagement /> : <Navigate to="/login" replace />
+            }
           />
         </Routes>
       </div>

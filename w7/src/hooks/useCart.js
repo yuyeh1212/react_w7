@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { showAlert } from "../redux/alertSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -9,6 +11,7 @@ const useCart = () => {
   const [loadingProductId, setLoadingProductId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [cartTotal, setCartTotal] = useState(0);
+  const dispatch = useDispatch();
 
   // 取得購物車內容
   const getCart = async () => {
@@ -18,7 +21,7 @@ const useCart = () => {
       setCart(res.data.data.carts);
       setCartTotal(res.data.data.total);
     } catch (error) {
-      alert("取得購物車失敗");
+      dispatch(showAlert({ message: "取得購物車失敗", type: "error" }));
     } finally {
       setIsLoading(false);
     }
@@ -27,7 +30,7 @@ const useCart = () => {
   // 加入購物車
   const addToCart = async (product_id, qty = 1) => {
     if (!product_id) {
-      alert("發生錯誤：產品 ID 無效");
+      dispatch(showAlert({ message: "發生錯誤：產品 ID 無效", type: "warning" }));
       return;
     }
 
@@ -37,9 +40,9 @@ const useCart = () => {
         data: { product_id, qty },
       });
       await getCart();
-      alert("成功加入購物車！");
+      dispatch(showAlert({ message: "成功加入購物車！", type: "success" }));
     } catch (error) {
-      alert("加入購物車失敗");
+      dispatch(showAlert({ message: "加入購物車失敗", type: "error" }));
     } finally {
       setLoadingProductId(null);
     }
@@ -56,8 +59,9 @@ const useCart = () => {
         data: { product_id: cartItem.product.id, qty: Number(qty) },
       });
       await getCart();
+      dispatch(showAlert({ message: "購物車數量更新成功！", type: "success" }));
     } catch (error) {
-      alert("更新數量失敗");
+      dispatch(showAlert({ message: "更新數量失敗", type: "error" }));
     } finally {
       setIsLoading(false); // 隱藏全螢幕 Loading
     }
@@ -69,8 +73,9 @@ const useCart = () => {
     try {
       await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cart_id}`);
       await getCart();
+      dispatch(showAlert({ message: "刪除商品成功！", type: "success" }));
     } catch (error) {
-      alert("刪除商品失敗");
+      dispatch(showAlert({ message: "刪除商品失敗", type: "error" }));
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +89,7 @@ const useCart = () => {
       if (res.data.success) {
         setCart([]); // 直接設置空陣列
         setCartTotal(0); // 重置購物車總額
-        console.log("購物車已清空");
+        dispatch(showAlert({ message: "購物車已清空", type: "success" }));
       }
     } catch (error) {
       if (error.response?.data?.message === "購物車無內容") {
@@ -92,7 +97,7 @@ const useCart = () => {
         setCart([]);
         setCartTotal(0);
       } else {
-        alert("清空購物車失敗");
+        dispatch(showAlert({ message: "清空購物車失敗", type: "error" }));
       }
     } finally {
       setIsLoading(false);
@@ -110,11 +115,11 @@ const useCart = () => {
       if (orderRes.data.success) {
         await clearCart(); 
         resetForm(); 
-        alert("訂單已送出！");
+        dispatch(showAlert({ message: "訂單已送出！", type: "success" }));
         await getCart();
       }
     } catch (error) {
-      alert("送出訂單失敗");
+      dispatch(showAlert({ message: "送出訂單失敗", type: "error" }));
     } finally {
       setIsLoading(false);
     }
